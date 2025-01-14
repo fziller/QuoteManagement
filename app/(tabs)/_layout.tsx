@@ -9,7 +9,7 @@ export default function TabLayout() {
       />
       <Tabs.Screen
         name="createQuotes"
-        options={{ title: "Create quotes", headerTitleAlign: "center" }}
+        options={{ title: "Create new quote", headerTitleAlign: "center" }}
       />
     </Tabs>
   );

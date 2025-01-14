@@ -13,7 +13,7 @@ export type Quote = {
   description: string;
   id: string;
   items: QuoteItem[];
-  status: string;
+  status: QuoteStatus;
   subtotal: number;
   total: number;
   total_tax: number;
@@ -32,3 +32,28 @@ export type QuoteResponse = {
   items: Quote[];
   totalPages: number;
 };
+
+export type QuoteRequest = {
+  customer_info: {
+    address?: string;
+    city?: string;
+    country?: string;
+    email: string;
+    name: string;
+    phone?: string;
+  };
+  items: QuoteItem[];
+  status: QuoteStatus;
+  subtotal: number;
+  total: number;
+  total_tax: number;
+};
+
+export enum QuoteStatus {
+  PENDING = "PENDING",
+  REJECTED = "REJECTED",
+  ACCEPTED = "ACCEPTED",
+  SENT = "SENT",
+  DRAFT = "DRAFT",
+  EXPIRED = "EXPIRED",
+}

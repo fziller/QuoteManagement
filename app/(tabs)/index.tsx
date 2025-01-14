@@ -1,5 +1,7 @@
 import QuoteCard from "@/components/QuoteCard";
+import QuoteStatusDropdown from "@/components/QuoteStatusDropdown";
 import { QuoteResponse } from "@/types";
+import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import {
   FlatList,
@@ -9,8 +11,6 @@ import {
   View,
 } from "react-native";
 import { ActivityIndicator, Modal, Searchbar } from "react-native-paper";
-import SelectDropdown from "react-native-select-dropdown";
-import { useQuery } from "react-query";
 
 // TODO Would be available on a production build either hardcoded or provided via build environment
 const hostname = "https://feasible-amoeba-profound.ngrok-free.app";
@@ -21,22 +21,20 @@ export default function ListQuotes() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const { data, isError, isFetching } = useQuery<QuoteResponse>(
-    ["quotes", page, searchQuery, statusFilter],
-    () =>
+  const { data, isError, isFetching } = useQuery<QuoteResponse>({
+    queryKey: ["quotes", page, searchQuery, statusFilter],
+    queryFn: () =>
       fetch(
         `${hostname}/api/collections/quotes/records?page=${page}&perPage=5${filter()}`,
         {
           method: "GET",
         }
       ).then((res) => res.json()),
-    {
-      keepPreviousData: true,
-    }
-  );
+  });
 
   console.log({ data, page, statusFilter, searchQuery });
 
+  // TODO Make filter and search work both at the same time
   const filter = () => {
     if (statusFilter.length > 0 && searchQuery.length > 0) {
       return `&filter=(status='${statusFilter}'%20&&%20customer_info.name~'${searchQuery}')`;
@@ -83,6 +81,7 @@ export default function ListQuotes() {
     );
   }
 
+  // TODO make buttons action float buttons
   const renderPageButtons = () => {
     const buttons = [];
     for (let i = 1; data?.totalPages && i <= data?.totalPages; i++) {
@@ -147,34 +146,10 @@ export default function ListQuotes() {
           minWidth: "95%",
         }}
       >
-        <SelectDropdown
-          data={["PENDING", "REJECTED", "ACCEPTED", "DRAFT", "EXPIRED", "SENT"]}
-          onSelect={(selectedItem, index) => {
+        <QuoteStatusDropdown
+          onSelect={(selectedItem) => {
             setStatusFilter(selectedItem);
             setPage(1);
-          }}
-          renderButton={() => (
-            <View
-              style={{
-                marginVertical: 10,
-                marginHorizontal: 5,
-              }}
-            >
-              <Text style={{ fontWeight: "bold" }}>Filter by status</Text>
-            </View>
-          )}
-          renderItem={(selectedItem, index) => {
-            return (
-              <View
-                style={{
-                  marginVertical: 10,
-                  marginHorizontal: 5,
-                  minWidth: "95%",
-                }}
-              >
-                <Text>{selectedItem}</Text>
-              </View>
-            );
           }}
         />
         <TouchableOpacity
