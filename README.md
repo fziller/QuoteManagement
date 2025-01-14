@@ -1,6 +1,4 @@
-# Welcome to your Expo app 👋
-
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# Welcome to your Quote Management 👋
 
 ## Get started
 
@@ -15,6 +13,11 @@ This is an [Expo](https://expo.dev) project created with [`create-expo-app`](htt
    ```bash
     npx expo start
    ```
+
+3. Set up Webserver by following the Setup guide in the [sample repo](https://gitlab.com/meisterwerk-public/mw-invoicing-api-sample)
+4. If not done, create a new account for [ngrok](https://ngrok.com/)
+5. (TODO) Create a static url in your ngrok dashboard to make the webserver available to the internet.
+6.
 
 In the output, you'll find options to open the app in a
 
