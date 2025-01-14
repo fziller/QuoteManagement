@@ -27,3 +27,8 @@ export type QuoteItem = {
   quantity: number;
   subtotal: number;
 };
+
+export type QuoteResponse = {
+  items: Quote[];
+  totalPages: number;
+};
