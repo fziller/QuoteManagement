@@ -1,13 +1,17 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { NavigationContainer } from "@react-navigation/native";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { QueryClient, onlineManager } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { Stack } from "expo-router";
 import { useEffect } from "react";
+import CreateQuotes from "./screens/CreateQuotes";
+import ListQuotes from "./screens/ListQuotes";
 
-export default function RootLayout() {
+export default function App() {
   const queryClient = new QueryClient();
+  const Tab = createBottomTabNavigator();
 
   const persister = createAsyncStoragePersister({
     storage: AsyncStorage,
@@ -31,10 +35,12 @@ export default function RootLayout() {
           .then(() => queryClient.invalidateQueries())
       }
     >
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
+      <NavigationContainer>
+        <Tab.Navigator initialRouteName="ListQuotes">
+          <Tab.Screen name="ListQuotes" component={ListQuotes} />
+          <Tab.Screen name="CreateQuotes" component={CreateQuotes} />
+        </Tab.Navigator>
+      </NavigationContainer>
     </PersistQueryClientProvider>
   );
 }
