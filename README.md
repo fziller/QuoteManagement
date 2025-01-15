@@ -8,46 +8,20 @@
    npm install
    ```
 
-2. Start the app
-
+2. Set up and start Webserver by following the Setup guide in the [sample repo](https://gitlab.com/meisterwerk-public/mw-invoicing-api-sample). Make sure to seed some data.
+3. a. If not done, create a new account for [ngrok](https://ngrok.com/)
+   b. Create a [static URL](https://ngrok.com/blog-post/free-static-domains-ngrok-users) in your ngrok account.
+   c. Make the Webserver publicly available by running
    ```bash
-    npx expo start
+      ngrok http localhost:8090 --url ${NGROK_STATIC_DOMAIN}
    ```
-
-3. Set up Webserver by following the Setup guide in the [sample repo](https://gitlab.com/meisterwerk-public/mw-invoicing-api-sample)
-4. If not done, create a new account for [ngrok](https://ngrok.com/)
-5. (TODO) Create a static url in your ngrok dashboard to make the webserver available to the internet.
-6.
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+4. Start the app like
 
 ```bash
-npm run reset-project
+   HOSTNAME=${NGROK_STATIC_URL} npx expo start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Supported Features
 
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- ListQuotes view provides a list of available Quotes, which can be filtered by available status. It also provides proper loading states and error messages in case something goes wrong.
+- CreateQuote view provides a functionality to create a new quote. Quote creation is also available when being offline and will be created once the user / device comes back.

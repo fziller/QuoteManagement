@@ -37,7 +37,11 @@ export default function App() {
     >
       <NavigationContainer>
         <Tab.Navigator initialRouteName="ListQuotes">
-          <Tab.Screen name="ListQuotes" component={ListQuotes} />
+          <Tab.Screen
+            name="ListQuotes"
+            component={ListQuotes}
+            options={{ title: "List of quotes", headerTitleAlign: "center" }}
+          />
           <Tab.Screen name="CreateQuotes" component={CreateQuotes} />
         </Tab.Navigator>
       </NavigationContainer>

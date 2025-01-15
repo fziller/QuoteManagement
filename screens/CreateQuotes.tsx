@@ -1,13 +1,15 @@
 import QuoteStatusDropdown from "@/components/QuoteStatusDropdown";
 import { Quote, QuoteRequest, QuoteStatus } from "@/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Constants from "expo-constants";
 import { nanoid } from "nanoid/non-secure"; // Only works with non-secure nanoid.
 import { useRef } from "react";
 import { View } from "react-native";
 import { Button, Snackbar, TextInput } from "react-native-paper";
 
 export default function CreateQuotes() {
-  const hostname = "https://feasible-amoeba-profound.ngrok-free.app";
+  // const hostname = "https://feasible-amoeba-profound.ngrok-free.app";
+  const hostname = Constants.expoConfig?.extra?.HOSTNAME;
 
   const queryClient = useQueryClient();
 

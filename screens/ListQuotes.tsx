@@ -2,6 +2,7 @@ import QuoteCard from "@/components/QuoteCard";
 import QuoteStatusDropdown from "@/components/QuoteStatusDropdown";
 import { QuoteResponse } from "@/types";
 import { useQuery } from "@tanstack/react-query";
+import Constants from "expo-constants";
 import { useState } from "react";
 import {
   FlatList,
@@ -13,9 +14,7 @@ import {
 import { ActivityIndicator, Modal, Searchbar } from "react-native-paper";
 
 // TODO Would be available on a production build either hardcoded or provided via build environment
-const hostname = "https://feasible-amoeba-profound.ngrok-free.app";
-
-console.log(`${hostname}/api/collections/quotes/records`);
+const hostname = Constants.expoConfig?.extra?.HOSTNAME;
 
 export default function ListQuotes() {
   const [page, setPage] = useState(1);
@@ -74,9 +73,14 @@ export default function ListQuotes() {
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
+          marginHorizontal: 10,
         }}
       >
-        <Text>Error. Please reload the app.</Text>
+        <Text style={{ textAlign: "center", fontWeight: "bold", fontSize: 20 }}>
+          {data
+            ? "was anders"
+            : "Could not load any data. Make sure to have a internet connection and restart the app."}
+        </Text>
       </View>
     );
   }
