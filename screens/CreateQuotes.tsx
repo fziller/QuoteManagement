@@ -1,4 +1,3 @@
-import ActivityIndicatorModal from "@/components/ActivityIndicatorModal";
 import InputComponent from "@/components/InputComponent";
 import useCalculateTotals, {
   TotalsActionType,
@@ -12,15 +11,18 @@ import { useQueryClient } from "@tanstack/react-query";
 import { nanoid } from "nanoid/non-secure"; // Only works with non-secure nanoid.
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
-import { Button, TextInput } from "react-native-paper";
+import { Button, Snackbar, TextInput, useTheme } from "react-native-paper";
 import SectionedMultiSelect from "react-native-sectioned-multi-select";
 
 export default function CreateQuotes() {
   const queryClient = useQueryClient();
 
+  const theme = useTheme();
+
   const [customerName, setCustomerName] = useState<string>("");
   const [customerEmail, setCustomerEmail] = useState<string>("");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const [showSnack, setShowSnack] = useState<boolean>(false);
   const { dispatch, state: totalsState } = useCalculateTotals();
   const { createQuote } = useQuotes();
   const { fetchProducts } = useProducts();
@@ -30,7 +32,9 @@ export default function CreateQuotes() {
   console.log("CreateQuote", isError, isPending, isSuccess);
 
   // Product data should already be fetched at this point.
-  const products: ProductResponse = queryClient.getQueryData(["products"]) ?? {
+  // TODO If not, we need to refetch the product data at this place.
+  // TODO Show proper error message in case of offline.
+  let products: ProductResponse = queryClient.getQueryData(["products"]) ?? {
     pageParams: [],
     pages: [],
   };
@@ -38,8 +42,6 @@ export default function CreateQuotes() {
   if (products.pages.length === 0) {
     fetchProducts();
   }
-
-  console.log("Products", products);
 
   const flatProducts: Product[] = products.pages
     .map((productResponse) => {
@@ -55,14 +57,13 @@ export default function CreateQuotes() {
     dispatch({ type: TotalsActionType.SET_SUBTOTAL, payload: subtotal });
   }, [selectedProducts]);
 
-  const handleSubmit = () => {
-    // Sum of all product prices
-    const subtotal = selectedProducts.reduce(
-      (acc, product) =>
-        acc + Number(flatProducts.find((p) => p.title === product)?.price),
-      0
-    );
+  useEffect(() => {
+    if (isError !== isSuccess) {
+      setShowSnack(true);
+    }
+  }, [isError, isSuccess]);
 
+  const handleSubmit = () => {
     // Create list of all items, which were previously selected.
     const items = selectedProducts.map((product) => {
       const productItem = flatProducts.find(
@@ -138,6 +139,9 @@ export default function CreateQuotes() {
         searchPlaceholderText="Search products"
         showDropDowns={true}
         showCheckbox={true}
+        colors={{
+          primary: theme.colors.primary,
+        }}
       />
       <Button
         mode="contained"
@@ -152,16 +156,13 @@ export default function CreateQuotes() {
       >
         Submit quote
       </Button>
-      <ActivityIndicatorModal isLoading={isPending} />
-      {/* <Snackbar
-        visible={createMutation.isSuccess}
-        onDismiss={() => createMutation.reset()}
+      <Snackbar
+        visible={showSnack}
+        onDismiss={() => setShowSnack(false)}
         duration={1500}
       >
-        {createMutation.isSuccess
-          ? "Quote created successfully"
-          : "Quote failed to create"}
-      </Snackbar> */}
+        {isSuccess ? "Quote created successfully" : "Quote failed to create"}
+      </Snackbar>
     </View>
   );
 }

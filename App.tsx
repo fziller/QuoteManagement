@@ -41,7 +41,7 @@ export default function App() {
       onSuccess={() =>
         queryClient
           .resumePausedMutations()
-          .then(() => queryClient.invalidateQueries())
+          .then(() => queryClient.invalidateQueries({ queryKey: ["quotes"] }))
       }
     >
       <NavigationContainer>

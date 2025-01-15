@@ -1,4 +1,5 @@
 import { QuoteRequest } from "@/types";
+import axios from "axios";
 import Constants from "expo-constants";
 
 const hostname = Constants.expoConfig?.extra?.HOSTNAME;
@@ -26,16 +27,21 @@ export const getQuotes = async (
   return quotes;
 };
 
-export const postQuote = async (quote: QuoteRequest) =>
-  fetch(`${hostname}/api/collections/quotes/records`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(quote),
-  })
-    .then((res) => res.json())
-    .catch((err) => console.log(err)); // Send error to Sentry or other error reporting service
+export const postQuote = async (quote: QuoteRequest) => {
+  try {
+    axios(`${hostname}/api/collections/quotes/records`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      data: JSON.stringify(quote),
+    });
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+};
+
 // Utitlity functions
 const filter = (statusFilter: string, searchQuery: string) => {
   if (statusFilter.length > 0 && searchQuery.length > 0) {

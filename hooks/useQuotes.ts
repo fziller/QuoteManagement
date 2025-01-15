@@ -22,11 +22,21 @@ const useQuotes = () => {
   };
 
   const createQuote = () => {
-    const updateLocalQuoteList = (id: string, isNotSynced?: boolean) => {
-      console.log("Triggering updateLocalQuoteList", { id, isNotSynced });
+    const updateLocalQuoteList = (
+      quoteRequest: QuoteRequest,
+      isNotSynced?: boolean
+    ) => {
+      console.log("Triggering updateLocalQuoteList", {
+        quoteRequest,
+        isNotSynced,
+      });
+
       queryClient.setQueryData<QuoteRequest[]>(["quotes"], (quotes) => {
+        console.log("Do we have any quote in our query data?", quotes);
+        if (!quotes) return [{ quoteRequest, isNotSynced }];
         return quotes?.map((quote) => {
-          if (quote.id === id) {
+          console.log("Looping through quotes, quote:", quote);
+          if (quote.id === quoteRequest.id) {
             return { ...quote, isNotSynced };
           }
           return quote;
@@ -40,19 +50,20 @@ const useQuotes = () => {
       mutationKey: ["quotes"],
       mutationFn: async (quote: QuoteRequest) => await postQuote(quote),
       onMutate: async (quote: QuoteRequest) => {
-        console.log("onMutate triggered", { quote, id: quote });
+        console.log("onMutate triggered", { quote, id: quote.id });
         await queryClient.cancelQueries({ queryKey: ["quotes"] });
-        updateLocalQuoteList(quote.id, true);
+        updateLocalQuoteList(quote, true);
         console.log("onMutate finished");
       },
-      onSuccess: (quote) => {
-        console.log("CreateMutation", "Success");
-        updateLocalQuoteList(quote.id, false);
+      onSuccess: (data, variables, context) => {
+        console.log("CreateMutation Success", { data, variables, context });
+        updateLocalQuoteList(variables, false);
       },
       onError: (error) => {
-        console.log("CreateMutation", error);
+        console.log("CreateMutation error", error);
       },
-      networkMode: "offlineFirst",
+      retry: true,
+      retryDelay: 1000,
     });
 
     return { mutate, isSuccess, isError, isPending, isPaused };
