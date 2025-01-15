@@ -13,14 +13,15 @@ import {
 } from "react-native";
 import { ActivityIndicator, Modal, Searchbar } from "react-native-paper";
 
-// TODO Would be available on a production build either hardcoded or provided via build environment
 const hostname = Constants.expoConfig?.extra?.HOSTNAME;
+
+console.log({ hostname, extra: Constants.expoConfig?.extra });
 
 export default function ListQuotes() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const { data, isError, isFetching } = useQuery<QuoteResponse>({
+  const { data, isError, isFetching, isLoading } = useQuery<QuoteResponse>({
     queryKey: ["quotes", page, searchQuery, statusFilter],
     queryFn: () =>
       fetch(
@@ -29,9 +30,10 @@ export default function ListQuotes() {
           method: "GET",
         }
       ).then((res) => res.json()),
+    placeholderData: (prev) => prev,
   });
 
-  console.log({ data, page, statusFilter, searchQuery });
+  //console.log({ data, page, statusFilter, searchQuery, isFetching, isLoading });
 
   // TODO Make filter and search work both at the same time
   const filter = () => {
@@ -52,7 +54,7 @@ export default function ListQuotes() {
   };
 
   // Initial fetch should show the indicator until data is fetched
-  if (!data && isFetching) {
+  if (!data && isLoading) {
     return (
       <View
         style={{
@@ -93,8 +95,8 @@ export default function ListQuotes() {
         <View
           key={i}
           style={{
-            marginVertical: 10,
             marginHorizontal: 5,
+            marginVertical: 10,
             padding: 5,
             borderWidth: 1,
             borderRadius: 50,
@@ -141,6 +143,7 @@ export default function ListQuotes() {
           marginHorizontal: 10,
         }}
       />
+      {renderPageButtons()}
 
       <View
         style={{
@@ -165,7 +168,7 @@ export default function ListQuotes() {
           <Text>Sort by total</Text>
         </TouchableOpacity>
       </View>
-      {renderPageButtons()}
+
       {data?.items.length === 0 && (
         <View
           style={{
@@ -183,7 +186,7 @@ export default function ListQuotes() {
         renderItem={({ item }) => <QuoteCard {...item} />}
       />
       <Modal
-        visible={isFetching}
+        visible={isLoading}
         children={
           <View
             style={{

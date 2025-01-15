@@ -30,13 +30,14 @@ const QuoteCard: React.FC<Quote> = (quote: Quote) => {
       />
       <Card.Content>
         <Divider style={{ marginHorizontal: 5, marginVertical: 5 }} />
-        {quote.items.map((item) => (
+        {quote.items.map((item, index) => (
           <View
             style={{
               flexDirection: "row",
               justifyContent: "space-between",
               marginHorizontal: 5,
             }}
+            key={item.product_name + index}
           >
             <Text>{item.product_name}</Text>
             <Text>{`${item.price}€`}</Text>
