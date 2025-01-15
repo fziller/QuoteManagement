@@ -2,21 +2,25 @@ import ActivityIndicatorModal from "@/components/ActivityIndicatorModal";
 import PageButtons from "@/components/PageButtons";
 import QuoteCard from "@/components/QuoteCard";
 import QuoteStatusDropdown from "@/components/QuoteStatusDropdown";
+import StatusComponent from "@/components/StatusComponent";
 import useQuotes from "@/hooks/useQuotes";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
-import { ActivityIndicator, Searchbar } from "react-native-paper";
+import { Searchbar } from "react-native-paper";
 
 export default function ListQuotes() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [sortTotal, setSortTotal] = useState<boolean | undefined>(undefined);
 
   const { getPaginatedQuotes } = useQuotes();
-  const { data, isLoading, isError } = getPaginatedQuotes(
+  const { data, isError, isFetching } = getPaginatedQuotes(
     page,
     searchQuery,
-    statusFilter
+    statusFilter,
+    sortTotal
   );
 
   const handleSearch = (query: string) => {
@@ -24,38 +28,13 @@ export default function ListQuotes() {
     setPage(1);
   };
 
-  // Initial fetch should show the indicator until data is fetched
-  if (!data && isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <ActivityIndicator size="large" animating />
-      </View>
-    );
-  }
-
   if (isError) {
     return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-          marginHorizontal: 10,
-        }}
-      >
-        <Text style={{ textAlign: "center", fontWeight: "bold", fontSize: 20 }}>
-          {data
-            ? "was anders"
-            : "Could not load any data. Make sure to have a internet connection and restart the app."}
-        </Text>
-      </View>
+      <StatusComponent text="An error occured. This is the right time to panic." />
     );
+  }
+  if (!data?.items || data?.items.length === 0) {
+    return <StatusComponent text="No quotes found." />;
   }
 
   return (
@@ -64,6 +43,7 @@ export default function ListQuotes() {
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
+        flexDirection: "column",
       }}
     >
       <Searchbar
@@ -94,11 +74,21 @@ export default function ListQuotes() {
         />
         <TouchableOpacity
           onPress={() => {
-            setStatusFilter("");
+            if (sortTotal === undefined) setSortTotal(true);
+            if (sortTotal === true) setSortTotal(false);
+            if (sortTotal === false) setSortTotal(undefined);
             setPage(1);
           }}
         >
-          <Text>Sort by total</Text>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            {sortTotal !== undefined && (
+              <MaterialIcons
+                name={sortTotal ? "arrow-drop-up" : "arrow-drop-down"}
+                size={24}
+              />
+            )}
+            <Text style={{ fontWeight: "bold" }}>Sort by total</Text>
+          </View>
         </TouchableOpacity>
       </View>
       <PageButtons
@@ -106,24 +96,13 @@ export default function ListQuotes() {
         pages={data?.totalPages ?? 1}
         onPageSelect={(page) => setPage(page)}
       />
-
-      {data?.items.length === 0 && (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <Text>No quotes found</Text>
-        </View>
-      )}
       <FlatList
         data={data?.items}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <QuoteCard {...item} />}
       />
-      <ActivityIndicatorModal isLoading={isLoading} />
+      {/* TODO Using this modal leads to keyboard being dismissed when looking for customers*/}
+      <ActivityIndicatorModal isLoading={isFetching} />
     </View>
   );
 }

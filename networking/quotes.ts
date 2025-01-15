@@ -6,13 +6,17 @@ const hostname = Constants.expoConfig?.extra?.HOSTNAME;
 export const getQuotes = async (
   page: number,
   searchQuery: string,
-  statusFilter: string
+  statusFilter: string,
+  sort?: boolean
 ) => {
+  console.log("Triggering getQuotes", { sort });
   const quotes = await fetch(
     `${hostname}/api/collections/quotes/records?page=${page}&perPage=5${filter(
       statusFilter,
       searchQuery
-    )}`,
+    )}${
+      sort === undefined ? "" : sort === true ? "&sort=-total" : "&sort=+total"
+    }`,
     {
       method: "GET",
     }
@@ -35,7 +39,7 @@ export const postQuote = async (quote: QuoteRequest) =>
 // Utitlity functions
 const filter = (statusFilter: string, searchQuery: string) => {
   if (statusFilter.length > 0 && searchQuery.length > 0) {
-    return `&filter=(status='${statusFilter}'%20&&%20customer_info.name~'${searchQuery}')`;
+    return `&filter=(status='${statusFilter}'%26%26customer_info.name~'${searchQuery}')`;
   } else if (statusFilter.length > 0) {
     return `&filter=(status='${statusFilter}')`;
   } else if (searchQuery.length > 0) {
