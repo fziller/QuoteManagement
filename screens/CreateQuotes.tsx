@@ -1,11 +1,14 @@
 import InputComponent from "@/components/InputComponent";
+import useCalculateTotals, {
+  TotalsActionType,
+} from "@/hooks/useCalculateTotals";
 import { Product, ProductResponse, QuoteRequest, QuoteStatus } from "@/types";
 import { validateEmail } from "@/utils/stringUtils";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { nanoid } from "nanoid/non-secure"; // Only works with non-secure nanoid.
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import { Button, Snackbar, TextInput } from "react-native-paper";
 import SectionedMultiSelect from "react-native-sectioned-multi-select";
@@ -15,10 +18,8 @@ export default function CreateQuotes() {
 
   const [customerName, setCustomerName] = useState<string>("");
   const [customerEmail, setCustomerEmail] = useState<string>("");
-  const [subtotal, setSubtotal] = useState<string>("0");
-  const [total, setTotal] = useState<string>("0");
-  const [totalTax, setTotalTax] = useState<string>("0");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
+  const { dispatch, state: totalsState } = useCalculateTotals();
 
   const hostname = Constants.expoConfig?.extra?.HOSTNAME;
 
@@ -49,9 +50,8 @@ export default function CreateQuotes() {
   // TODO let mutation fail and check error. Check offline case.
   const createMutation = useMutation({
     mutationKey: ["create-quotes"],
-    mutationFn: async (quote: QuoteRequest) => {
-      console.log("Triggering mutation");
-      return fetch(`${hostname}/api/collections/quotes/records`, {
+    mutationFn: async (quote: QuoteRequest) =>
+      fetch(`${hostname}/api/collections/quotes/records`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -59,50 +59,69 @@ export default function CreateQuotes() {
         body: JSON.stringify(quote),
       })
         .then((res) => res.json())
-        .catch((err) => console.log(err));
-    },
+        .catch((err) => console.log(err)),
+
     onMutate: async (payload: QuoteRequest) => {
       await queryClient.cancelQueries();
       updateLocalQuoteList(payload.id, true);
     },
     onSuccess: (quote) => {
-      console.log("Success");
+      console.log("CreateMutation", "Success");
       updateLocalQuoteList(quote.id, false);
     },
     onError: (error) => {
-      console.log(error);
+      console.log("CreateMutation", error);
     },
   });
 
+  useEffect(() => {
+    const subtotal = selectedProducts.reduce((acc, product) => {
+      console.log("calculateTotals", {
+        acc,
+        price: Number(flatProducts.find((p) => p.title === product)?.price),
+      });
+      return acc + Number(flatProducts.find((p) => p.title === product)?.price);
+    }, 0);
+
+    dispatch({ type: TotalsActionType.SET_SUBTOTAL, payload: subtotal });
+  }, [selectedProducts]);
+
+  console.log({ totalsState });
+
   const handleSubmit = () => {
-    if (
-      customerName === "" ||
-      customerEmail === "" ||
-      selectedProducts.length === 0
-    ) {
-      return;
-    }
+    // Sum of all product prices
+    const subtotal = selectedProducts.reduce(
+      (acc, product) =>
+        acc + Number(flatProducts.find((p) => p.title === product)?.price),
+      0
+    );
+
+    // Create list of all items, which were previously selected.
+    const items = selectedProducts.map((product) => {
+      const productItem = flatProducts.find(
+        (p: Product) => p.title === product
+      );
+      return {
+        product_name: productItem?.title,
+        price: productItem?.price,
+        quantity: 1,
+        subtotal: productItem?.price,
+      };
+    });
+
+    // Create list of all items, which were previously selected.
     createMutation.mutate({
       id: nanoid(15), // Need to be 15 chars long.
       customer_info: {
         name: customerName,
         email: customerEmail,
       },
-      items: selectedProducts.map((product) => {
-        const productItem = flatProducts.find(
-          (p: Product) => p.title === product
-        );
-        return {
-          product_name: productItem?.title,
-          price: productItem?.price,
-          quantity: 1,
-          subtotal: productItem?.price,
-        };
-      }),
+      items,
+      // Set to DRAFT as we might need validation in backend or send products before wrapping it up.
       status: QuoteStatus.DRAFT,
-      subtotal: 25,
-      total: 28,
-      total_tax: 2,
+      subtotal: totalsState.subtotal,
+      total: totalsState.total,
+      total_tax: totalsState.totalTax,
     } as QuoteRequest);
   };
 
@@ -120,6 +139,7 @@ export default function CreateQuotes() {
       <TextInput
         label="Customer email"
         placeholder="Enter email of customer ..."
+        keyboardType="email-address"
         value={customerEmail}
         onChangeText={(email) => {
           setCustomerEmail(email);
@@ -129,30 +149,14 @@ export default function CreateQuotes() {
 
       <TextInput
         label="Subtotal"
-        keyboardType="numeric"
-        value={subtotal}
-        onChangeText={(subtotal) => {
-          setSubtotal(subtotal);
-        }}
-        error={subtotal === "" || Number(subtotal) <= 0}
+        value={totalsState.subtotal.toString()}
+        disabled
       />
-      <TextInput
-        label="Total"
-        keyboardType="numeric"
-        value={total}
-        onChangeText={(total) => {
-          setTotal(total);
-        }}
-        error={total === "" || Number(total) <= 0}
-      />
+      <TextInput label="Total" value={totalsState.total.toString()} disabled />
       <TextInput
         label="Total Tax"
-        keyboardType="numeric"
-        value={totalTax}
-        onChangeText={(totalTax) => {
-          setTotalTax(totalTax);
-        }}
-        error={totalTax === "" || Number(totalTax) <= 0}
+        value={totalsState.totalTax.toString()}
+        disabled
       />
       <SectionedMultiSelect
         items={flatProducts}
@@ -168,7 +172,6 @@ export default function CreateQuotes() {
         searchPlaceholderText="Search products"
         showDropDowns={true}
         showCheckbox={true}
-        styles={{ container: { borderColor: "black", borderWidth: 1 } }}
       />
       <Button
         mode="contained"
@@ -178,13 +181,7 @@ export default function CreateQuotes() {
         disabled={
           customerName === "" ||
           customerEmail === "" ||
-          selectedProducts.length === 0 ||
-          subtotal === "" ||
-          Number(subtotal) <= 0 ||
-          total === "" ||
-          Number(total) <= 0 ||
-          totalTax === "" ||
-          Number(totalTax) <= 0
+          selectedProducts.length === 0
         }
       >
         Submit quote

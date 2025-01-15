@@ -15,10 +15,22 @@
    ```bash
       ngrok http localhost:8090 --url ${NGROK_STATIC_DOMAIN}
    ```
-4. Start the app like
+4. Start the app on the simulator / emulator like
 
 ```bash
    HOSTNAME=${NGROK_STATIC_URL} npx expo start
+```
+
+or connect your device and start it on android device via
+
+```bash
+   HOSTNAME=${NGROK_STATIC_URL} npx expo run:android --device
+```
+
+or on iOS device via
+
+```bash
+   HOSTNAME=${NGROK_STATIC_URL} npx expo run:ios --device
 ```
 
 ## Supported Features
