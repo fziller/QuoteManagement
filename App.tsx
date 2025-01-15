@@ -1,3 +1,4 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -5,15 +6,18 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { QueryClient, onlineManager } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import Constants from "expo-constants";
 import { useEffect } from "react";
+import { useTheme } from "react-native-paper";
+import useProducts from "./hooks/useProducts";
 import CreateQuotes from "./screens/CreateQuotes";
 import ListQuotes from "./screens/ListQuotes";
 
 export default function App() {
   const queryClient = new QueryClient();
   const Tab = createBottomTabNavigator();
-  const hostname = Constants.expoConfig?.extra?.HOSTNAME;
+
+  const { prefetchProducts } = useProducts();
+  const theme = useTheme();
 
   const persister = createAsyncStoragePersister({
     storage: AsyncStorage,
@@ -21,34 +25,13 @@ export default function App() {
   });
 
   useEffect(() => {
+    // Get all products beforehand to have them cached in offline case.
+    void prefetchProducts();
+    // Makes sure to trigger paused mutations if we come back online
     return NetInfo.addEventListener((state) => {
       const status = !!state.isConnected;
       onlineManager.setOnline(status);
     });
-  }, []);
-
-  useEffect(() => {
-    const prefetchProducts = async () => {
-      await queryClient.prefetchInfiniteQuery({
-        queryKey: ["products"],
-        queryFn: async ({ pageParam }) => {
-          const products = await fetch(
-            `${hostname}/api/collections/products/records?page=${pageParam}&perPage=30`
-          ).then((res) => res.json());
-          console.log("Products: ", products);
-          return products;
-        },
-        initialPageParam: 1,
-        getNextPageParam: (lastPage) => {
-          if (lastPage.page === lastPage.totalPages) return undefined;
-          return lastPage.page + 1;
-        },
-        pages: 10,
-        staleTime: 1000 * 60 * 60, // 1 hour
-      });
-    };
-
-    void prefetchProducts();
   }, []);
 
   return (
@@ -62,7 +45,33 @@ export default function App() {
       }
     >
       <NavigationContainer>
-        <Tab.Navigator initialRouteName="ListQuotes">
+        <Tab.Navigator
+          initialRouteName="ListQuotes"
+          screenOptions={({ route }) => ({
+            tabBarActiveBackgroundColor: theme.colors.primary,
+            tabBarActiveTintColor: "white",
+            tabBarIcon: (props) => {
+              if (route.name === "ListQuotes") {
+                return (
+                  <MaterialIcons
+                    name="task"
+                    size={24}
+                    color={props.focused ? "white" : "black"}
+                  />
+                );
+              }
+              if (route.name === "CreateQuotes") {
+                return (
+                  <MaterialIcons
+                    name="person-add-alt-1"
+                    size={24}
+                    color={props.focused ? "white" : "black"}
+                  />
+                );
+              }
+            },
+          })}
+        >
           <Tab.Screen
             name="ListQuotes"
             component={ListQuotes}
@@ -72,7 +81,7 @@ export default function App() {
             name="CreateQuotes"
             component={CreateQuotes}
             options={{
-              title: "Create a new quote",
+              title: "Create new quote",
               headerTitleAlign: "center",
             }}
           />

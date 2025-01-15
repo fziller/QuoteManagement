@@ -39,8 +39,8 @@ describe("useCalculateTotals", () => {
     });
     expect(result.current.state).toEqual({
       subtotal: 100.99,
-      totalTax: 19.09,
-      total: 120.08,
+      totalTax: 19.19,
+      total: 120.18,
     });
   });
 

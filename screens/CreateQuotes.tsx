@@ -1,16 +1,18 @@
+import ActivityIndicatorModal from "@/components/ActivityIndicatorModal";
 import InputComponent from "@/components/InputComponent";
 import useCalculateTotals, {
   TotalsActionType,
 } from "@/hooks/useCalculateTotals";
+import useProducts from "@/hooks/useProducts";
+import useQuotes from "@/hooks/useQuotes";
 import { Product, ProductResponse, QuoteRequest, QuoteStatus } from "@/types";
 import { validateEmail } from "@/utils/stringUtils";
 import { MaterialIcons as Icon } from "@expo/vector-icons";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Constants from "expo-constants";
+import { useQueryClient } from "@tanstack/react-query";
 import { nanoid } from "nanoid/non-secure"; // Only works with non-secure nanoid.
 import React, { useEffect, useState } from "react";
 import { View } from "react-native";
-import { Button, Snackbar, TextInput } from "react-native-paper";
+import { Button, TextInput } from "react-native-paper";
 import SectionedMultiSelect from "react-native-sectioned-multi-select";
 
 export default function CreateQuotes() {
@@ -20,26 +22,24 @@ export default function CreateQuotes() {
   const [customerEmail, setCustomerEmail] = useState<string>("");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
   const { dispatch, state: totalsState } = useCalculateTotals();
+  const { createQuote } = useQuotes();
+  const { fetchProducts } = useProducts();
 
-  const hostname = Constants.expoConfig?.extra?.HOSTNAME;
+  const { mutate: quoteMutate, isError, isPending, isSuccess } = createQuote();
 
-  // TODO The values need validation
+  console.log("CreateQuote", isError, isPending, isSuccess);
 
-  const updateLocalQuoteList = (id: string, isNotSynced?: boolean) => {
-    queryClient.setQueryData<QuoteRequest[]>(["quotes"], (quotes) => {
-      return quotes?.map((quote) => {
-        if (quote.id === id) {
-          return { ...quote, isNotSynced };
-        }
-        return quote;
-      });
-    });
-  };
-
+  // Product data should already be fetched at this point.
   const products: ProductResponse = queryClient.getQueryData(["products"]) ?? {
     pageParams: [],
     pages: [],
   };
+
+  if (products.pages.length === 0) {
+    fetchProducts();
+  }
+
+  console.log("Products", products);
 
   const flatProducts: Product[] = products.pages
     .map((productResponse) => {
@@ -47,46 +47,13 @@ export default function CreateQuotes() {
     })
     .flat();
 
-  // TODO let mutation fail and check error. Check offline case.
-  const createMutation = useMutation({
-    mutationKey: ["create-quotes"],
-    mutationFn: async (quote: QuoteRequest) =>
-      fetch(`${hostname}/api/collections/quotes/records`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(quote),
-      })
-        .then((res) => res.json())
-        .catch((err) => console.log(err)),
-
-    onMutate: async (payload: QuoteRequest) => {
-      await queryClient.cancelQueries();
-      updateLocalQuoteList(payload.id, true);
-    },
-    onSuccess: (quote) => {
-      console.log("CreateMutation", "Success");
-      updateLocalQuoteList(quote.id, false);
-    },
-    onError: (error) => {
-      console.log("CreateMutation", error);
-    },
-  });
-
   useEffect(() => {
     const subtotal = selectedProducts.reduce((acc, product) => {
-      console.log("calculateTotals", {
-        acc,
-        price: Number(flatProducts.find((p) => p.title === product)?.price),
-      });
       return acc + Number(flatProducts.find((p) => p.title === product)?.price);
     }, 0);
 
     dispatch({ type: TotalsActionType.SET_SUBTOTAL, payload: subtotal });
   }, [selectedProducts]);
-
-  console.log({ totalsState });
 
   const handleSubmit = () => {
     // Sum of all product prices
@@ -110,14 +77,14 @@ export default function CreateQuotes() {
     });
 
     // Create list of all items, which were previously selected.
-    createMutation.mutate({
+    quoteMutate({
       id: nanoid(15), // Need to be 15 chars long.
       customer_info: {
         name: customerName,
         email: customerEmail,
       },
       items,
-      // Set to DRAFT as we might need validation in backend or send products before wrapping it up.
+      // Assumption: Set to DRAFT as we might need validation in backend or send products before wrapping it up.
       status: QuoteStatus.DRAFT,
       subtotal: totalsState.subtotal,
       total: totalsState.total,
@@ -146,7 +113,6 @@ export default function CreateQuotes() {
         }}
         error={customerEmail === "" || validateEmail(customerEmail)}
       />
-
       <TextInput
         label="Subtotal"
         value={totalsState.subtotal.toString()}
@@ -186,7 +152,8 @@ export default function CreateQuotes() {
       >
         Submit quote
       </Button>
-      <Snackbar
+      <ActivityIndicatorModal isLoading={isPending} />
+      {/* <Snackbar
         visible={createMutation.isSuccess}
         onDismiss={() => createMutation.reset()}
         duration={1500}
@@ -194,7 +161,7 @@ export default function CreateQuotes() {
         {createMutation.isSuccess
           ? "Quote created successfully"
           : "Quote failed to create"}
-      </Snackbar>
+      </Snackbar> */}
     </View>
   );
 }

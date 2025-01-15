@@ -1,52 +1,23 @@
+import ActivityIndicatorModal from "@/components/ActivityIndicatorModal";
+import PageButtons from "@/components/PageButtons";
 import QuoteCard from "@/components/QuoteCard";
 import QuoteStatusDropdown from "@/components/QuoteStatusDropdown";
-import { QuoteResponse } from "@/types";
-import { useQuery } from "@tanstack/react-query";
-import Constants from "expo-constants";
+import useQuotes from "@/hooks/useQuotes";
 import { useState } from "react";
-import {
-  FlatList,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-import { ActivityIndicator, Modal, Searchbar } from "react-native-paper";
-
-const hostname = Constants.expoConfig?.extra?.HOSTNAME;
-
-console.log({ hostname, extra: Constants.expoConfig?.extra });
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Searchbar } from "react-native-paper";
 
 export default function ListQuotes() {
   const [page, setPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const { data, isError, isFetching, isLoading } = useQuery<QuoteResponse>({
-    queryKey: ["quotes", page, searchQuery, statusFilter],
-    queryFn: () =>
-      fetch(
-        `${hostname}/api/collections/quotes/records?page=${page}&perPage=5${filter()}`,
-        {
-          method: "GET",
-        }
-      ).then((res) => res.json()),
-    placeholderData: (prev) => prev,
-  });
 
-  //console.log({ data, page, statusFilter, searchQuery, isFetching, isLoading });
-
-  // TODO Make filter and search work both at the same time
-  const filter = () => {
-    if (statusFilter.length > 0 && searchQuery.length > 0) {
-      return `&filter=(status='${statusFilter}'%20&&%20customer_info.name~'${searchQuery}')`;
-    } else if (statusFilter.length > 0) {
-      return `&filter=(status='${statusFilter}')`;
-    } else if (searchQuery.length > 0) {
-      return `&filter=(customer_info.name%20~%20'${searchQuery}')`;
-    } else {
-      return "";
-    }
-  };
+  const { getPaginatedQuotes } = useQuotes();
+  const { data, isLoading, isError } = getPaginatedQuotes(
+    page,
+    searchQuery,
+    statusFilter
+  );
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -87,43 +58,6 @@ export default function ListQuotes() {
     );
   }
 
-  // TODO make buttons action float buttons
-  const renderPageButtons = () => {
-    const buttons = [];
-    for (let i = 1; data?.totalPages && i <= data?.totalPages; i++) {
-      buttons.push(
-        <View
-          key={i}
-          style={{
-            marginHorizontal: 5,
-            marginVertical: 10,
-            padding: 5,
-            borderWidth: 1,
-            borderRadius: 50,
-            width: 40,
-            height: 40,
-            backgroundColor: page === i ? "green" : "white",
-            justifyContent: "center",
-            alignSelf: "center",
-          }}
-        >
-          <Text style={{ textAlign: "center" }} onPress={() => setPage(i)}>
-            {i}
-          </Text>
-        </View>
-      );
-    }
-    return (
-      <ScrollView
-        horizontal
-        style={{ marginVertical: 10, marginHorizontal: 5 }}
-        showsHorizontalScrollIndicator={false}
-      >
-        {buttons}
-      </ScrollView>
-    );
-  };
-
   return (
     <View
       style={{
@@ -143,7 +77,6 @@ export default function ListQuotes() {
           marginHorizontal: 10,
         }}
       />
-      {renderPageButtons()}
 
       <View
         style={{
@@ -168,6 +101,11 @@ export default function ListQuotes() {
           <Text>Sort by total</Text>
         </TouchableOpacity>
       </View>
+      <PageButtons
+        currentPage={page}
+        pages={data?.totalPages ?? 1}
+        onPageSelect={(page) => setPage(page)}
+      />
 
       {data?.items.length === 0 && (
         <View
@@ -185,20 +123,7 @@ export default function ListQuotes() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <QuoteCard {...item} />}
       />
-      <Modal
-        visible={isLoading}
-        children={
-          <View
-            style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <ActivityIndicator size="large" animating />
-          </View>
-        }
-      />
+      <ActivityIndicatorModal isLoading={isLoading} />
     </View>
   );
 }
