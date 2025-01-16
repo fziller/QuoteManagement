@@ -24,12 +24,6 @@ export default function ListQuotes() {
     setPage(1);
   };
 
-  if (isError) {
-    return (
-      <StatusComponent text="An error occured. This is the right time to panic." />
-    );
-  }
-
   return (
     <View
       style={{
@@ -99,6 +93,10 @@ export default function ListQuotes() {
       {(!data?.items || data?.items.length === 0) && (
         <StatusComponent text="No quotes found." />
       )}
+      {isError && (
+        <StatusComponent text="An error occured. This is the right time to panic. Restart the app and make sure to have an active internet connection" />
+      )}
+
       <FlatList
         data={data?.items}
         keyExtractor={(item) => item.id}

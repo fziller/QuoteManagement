@@ -41,6 +41,9 @@ export default function App() {
           visibilityTime: 2000,
         });
       }
+      if (status === true) {
+        void prefetchProducts();
+      }
     });
   }, []);
 

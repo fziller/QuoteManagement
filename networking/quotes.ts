@@ -30,14 +30,14 @@ export const getQuotes = async (
     );
     return quotes.data;
   } catch (err) {
-    console.log(err); // Send error to Sentry or other error reporting service
+    console.log("getQuotes", err); // Send error to Sentry or other error reporting service
     throw err;
   }
 };
 
 export const postQuote = async (quote: QuoteRequest) => {
   try {
-    axios(`${hostname}/api/collections/quotes/records`, {
+    const result = await axios(`${hostname}/api/collections/quotes/records`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -45,7 +45,7 @@ export const postQuote = async (quote: QuoteRequest) => {
       data: JSON.stringify(quote),
     });
   } catch (err) {
-    console.log(err);
+    console.log("postQuote", err);
     throw err;
   }
 };

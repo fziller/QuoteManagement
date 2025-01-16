@@ -18,7 +18,7 @@ const useProducts = () => {
     });
     Toast.show({
       type: "success",
-      text1: "Products are cached for offline mode. 🎉",
+      text1: "Latest product data is cached for offline mode. 🎉",
     });
   };
 

@@ -24,6 +24,7 @@ const useQuotes = () => {
         queryKey: ["quotes", page, searchQuery, statusFilter, sort],
         queryFn: () => getQuotes(page, searchQuery, statusFilter, sort),
         placeholderData: (prev) => prev,
+        staleTime: 1000 * 60 * 15, // 15 minutes. Can be extended or shortened, depending on needs.
       });
 
     // At least notify customer in case of being offline and failed pageload.
@@ -67,6 +68,11 @@ const useQuotes = () => {
       },
       onSuccess: (data, { quote, handleOnSuccess }, context) => {
         updateLocalQuoteList(quote, false);
+        queryClient.invalidateQueries({
+          // Make sure we are able to fetch the latest quote data
+          queryKey: ["quotes"],
+          refetchType: "none",
+        });
         handleOnSuccess();
       },
       onError: (error, { handleOnError }) => {

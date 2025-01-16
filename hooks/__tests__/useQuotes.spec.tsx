@@ -53,6 +53,7 @@ describe("useQuotes Hook", () => {
       queryKey: ["quotes", page, searchQuery, statusFilter, sort],
       queryFn: expect.any(Function),
       placeholderData: expect.any(Function),
+      staleTime: 900000,
     });
 
     expect(response.data).toEqual(mockQuotesData);
