@@ -47,5 +47,11 @@ The \*.apk file can be found under android/app/build/outputs/apk/release/app-rel
 
 ## Supported Features
 
-- ListQuotes view provides a list of available Quotes, which can be filtered by available status. It also provides proper loading states and error messages in case something goes wrong.
+- ListQuotes view provides a list of available Quotes, which can be filtered by available status as well as customer names or email addresses. It can also be sorted by the given totals. It also provides proper loading states and error messages in case something goes wrong.
 - CreateQuote view provides a functionality to create a new quote. Quote creation is also available when being offline and will be created once the user / device comes back.
+
+## Known issues
+
+- Queries created while being offline are not created when application is killed before sending it.
+- Some further design issues, e.g. if only one query result is being shown
+- Sometimes, the list of products disappear for no reason. Needs some investigation.

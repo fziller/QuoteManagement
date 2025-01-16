@@ -72,6 +72,7 @@ export default function App() {
           initialRouteName="ListQuotes"
           screenOptions={({ route }) => ({
             tabBarActiveBackgroundColor: theme.colors.primary,
+
             tabBarActiveTintColor: "white",
             tabBarIcon: (props) => {
               if (route.name === "ListQuotes") {
@@ -98,7 +99,14 @@ export default function App() {
           <Tab.Screen
             name="ListQuotes"
             component={ListQuotes}
-            options={{ title: "List of quotes", headerTitleAlign: "center" }}
+            options={{
+              title: "List of quotes",
+              headerTitleAlign: "center",
+              headerTintColor: "white",
+              headerStyle: {
+                backgroundColor: theme.colors.primary,
+              },
+            }}
           />
           <Tab.Screen
             name="CreateQuotes"
@@ -106,6 +114,10 @@ export default function App() {
             options={{
               title: "Create new quote",
               headerTitleAlign: "center",
+              headerTintColor: "white",
+              headerStyle: {
+                backgroundColor: theme.colors.primary,
+              },
             }}
           />
         </Tab.Navigator>
