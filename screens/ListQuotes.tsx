@@ -1,4 +1,3 @@
-import ActivityIndicatorModal from "@/components/ActivityIndicatorModal";
 import PageButtons from "@/components/PageButtons";
 import QuoteCard from "@/components/QuoteCard";
 import QuoteStatusDropdown from "@/components/QuoteStatusDropdown";
@@ -24,6 +23,7 @@ export default function ListQuotes() {
   );
 
   const handleSearch = (query: string) => {
+    // TODO Add debounce here
     setSearchQuery(query);
     setPage(1);
   };
@@ -32,9 +32,6 @@ export default function ListQuotes() {
     return (
       <StatusComponent text="An error occured. This is the right time to panic." />
     );
-  }
-  if (!data?.items || data?.items.length === 0) {
-    return <StatusComponent text="No quotes found." />;
   }
 
   return (
@@ -56,6 +53,7 @@ export default function ListQuotes() {
           marginVertical: 10,
           marginHorizontal: 10,
         }}
+        loading={isFetching}
       />
 
       <View
@@ -96,13 +94,16 @@ export default function ListQuotes() {
         pages={data?.totalPages ?? 1}
         onPageSelect={(page) => setPage(page)}
       />
+      {(!data?.items || data?.items.length === 0) && (
+        <StatusComponent text="No quotes found." />
+      )}
       <FlatList
         data={data?.items}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <QuoteCard {...item} />}
       />
       {/* TODO Using this modal leads to keyboard being dismissed when looking for customers*/}
-      <ActivityIndicatorModal isLoading={isFetching} />
+      {/* <ActivityIndicatorModal isLoading={isFetching} /> */}
     </View>
   );
 }

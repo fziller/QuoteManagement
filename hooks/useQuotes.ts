@@ -48,16 +48,21 @@ const useQuotes = () => {
 
     const { mutate, isSuccess, isError, isPending, isPaused } = useMutation({
       mutationKey: ["quotes"],
-      mutationFn: async (quote: QuoteRequest) => await postQuote(quote),
-      onMutate: async (quote: QuoteRequest) => {
+      mutationFn: async ({
+        quote,
+      }: {
+        quote: QuoteRequest;
+        handleOnSuccess: () => void;
+      }) => await postQuote(quote),
+      onMutate: async ({ quote }) => {
         console.log("onMutate triggered", { quote, id: quote.id });
         await queryClient.cancelQueries({ queryKey: ["quotes"] });
         updateLocalQuoteList(quote, true);
         console.log("onMutate finished");
       },
-      onSuccess: (data, variables, context) => {
-        console.log("CreateMutation Success", { data, variables, context });
-        updateLocalQuoteList(variables, false);
+      onSuccess: (data, { quote, handleOnSuccess }, context) => {
+        updateLocalQuoteList(quote, false);
+        handleOnSuccess();
       },
       onError: (error) => {
         console.log("CreateMutation error", error);

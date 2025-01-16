@@ -33,6 +33,16 @@ or on iOS device via
    HOSTNAME=${NGROK_STATIC_URL} npx expo run:ios --device
 ```
 
+## Build the app
+
+For building the application for an android voice, do
+
+```bash
+   cd android && ./gradlew assembleRelease
+```
+
+The \*.apk file can be found under android/app/build/outputs/apk/release/app-release.apk
+
 ## Supported Features
 
 - ListQuotes view provides a list of available Quotes, which can be filtered by available status. It also provides proper loading states and error messages in case something goes wrong.

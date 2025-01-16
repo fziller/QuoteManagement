@@ -34,6 +34,7 @@ export default function CreateQuotes() {
   // Product data should already be fetched at this point.
   // TODO If not, we need to refetch the product data at this place.
   // TODO Show proper error message in case of offline.
+  // TODO we need a callback for onSuccess
   let products: ProductResponse = queryClient.getQueryData(["products"]) ?? {
     pageParams: [],
     pages: [],
@@ -78,7 +79,7 @@ export default function CreateQuotes() {
     });
 
     // Create list of all items, which were previously selected.
-    quoteMutate({
+    quoteMutate({quote: {
       id: nanoid(15), // Need to be 15 chars long.
       customer_info: {
         name: customerName,
@@ -90,7 +91,7 @@ export default function CreateQuotes() {
       subtotal: totalsState.subtotal,
       total: totalsState.total,
       total_tax: totalsState.totalTax,
-    } as QuoteRequest);
+    }, handleOnSuccess: () => {}  );
   };
 
   return (

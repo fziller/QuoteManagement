@@ -10,6 +10,9 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "myapp",
   extra: {
     HOSTNAME: process.env.HOSTNAME,
+    eas: {
+      projectId: "41a639ca-9faf-4963-994f-b6235e51f0ea",
+    },
   },
   userInterfaceStyle: "automatic",
   newArchEnabled: true,
@@ -23,7 +26,6 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     },
     package: "com.existuus.quotemanagement",
   },
-
   plugins: [
     [
       "expo-splash-screen",
