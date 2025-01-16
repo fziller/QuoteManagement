@@ -102,8 +102,6 @@ export default function ListQuotes() {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <QuoteCard {...item} />}
       />
-      {/* TODO Using this modal leads to keyboard being dismissed when looking for customers*/}
-      {/* <ActivityIndicatorModal isLoading={isFetching} /> */}
     </View>
   );
 }

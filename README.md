@@ -15,7 +15,9 @@
    ```bash
       ngrok http localhost:8090 --url ${NGROK_STATIC_DOMAIN}
    ```
-4. Start the app on the simulator / emulator like
+4. Make sure to have either an [android emulator](https://developer.android.com/studio/run/managing-avds?hl=en) or a [ios simulator](https://developer.apple.com/documentation/xcode/running-your-app-in-simulator-or-on-a-device) created by following the linked guides.
+
+5. Start the app on the simulator / emulator like
 
 ```bash
    HOSTNAME=${NGROK_STATIC_URL} npx expo start
@@ -38,7 +40,7 @@ or on iOS device via
 For building the application for an android voice, do
 
 ```bash
-   cd android && ./gradlew assembleRelease
+   cd android && HOSTNAME=${NGROK_STATIC_URL} ./gradlew assembleRelease
 ```
 
 The \*.apk file can be found under android/app/build/outputs/apk/release/app-release.apk

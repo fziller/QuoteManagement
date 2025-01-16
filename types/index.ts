@@ -9,10 +9,10 @@ export interface Quote extends QuoteRequest {
 }
 
 export interface QuoteItem {
-  price: number;
-  product_name: string;
-  quantity: number;
-  subtotal: number;
+  price?: number;
+  product_name?: string;
+  quantity?: number;
+  subtotal?: number;
 }
 
 export interface QuoteRequest {

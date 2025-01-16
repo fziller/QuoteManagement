@@ -8,6 +8,7 @@ import { QueryClient, onlineManager } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useEffect } from "react";
 import { useTheme } from "react-native-paper";
+import Toast from "react-native-toast-message";
 import useProducts from "./hooks/useProducts";
 import CreateQuotes from "./screens/CreateQuotes";
 import ListQuotes from "./screens/ListQuotes";
@@ -31,6 +32,22 @@ export default function App() {
     return NetInfo.addEventListener((state) => {
       const status = !!state.isConnected;
       onlineManager.setOnline(status);
+      if (!status) {
+        Toast.show({
+          type: "error",
+          text1: "You are offline",
+          text2: "Please check your internet connection",
+          visibilityTime: 2000,
+        });
+      }
+      if (status) {
+        Toast.show({
+          type: "success",
+          text1: "You are back online",
+          visibilityTime: 2000,
+        });
+        void prefetchProducts();
+      }
     });
   }, []);
 
@@ -38,11 +55,25 @@ export default function App() {
     <PersistQueryClientProvider
       persistOptions={{ persister }}
       client={queryClient}
-      onSuccess={() =>
+      onSuccess={() => {
+        // As per https://github.com/TanStack/query/discussions/7044, this should resume persisted mutations even after app kill.
+        // It does not seem to work and requires some further digging.
+        const mutations = queryClient
+          .getMutationCache()
+          .getAll()
+          .filter(
+            (m) =>
+              !m.state.isPaused &&
+              (m.state.status === "idle" || m.state.status === "pending")
+          );
+        for (const mutation of mutations) {
+          void mutation.continue();
+        }
+
         queryClient
           .resumePausedMutations()
-          .then(() => queryClient.invalidateQueries({ queryKey: ["quotes"] }))
-      }
+          .then(() => queryClient.invalidateQueries({ queryKey: ["quotes"] }));
+      }}
     >
       <NavigationContainer>
         <Tab.Navigator
@@ -87,6 +118,7 @@ export default function App() {
           />
         </Tab.Navigator>
       </NavigationContainer>
+      <Toast />
     </PersistQueryClientProvider>
   );
 }

@@ -5,6 +5,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 const useQuotes = () => {
   const queryClient = useQueryClient();
 
+  interface CreateMutationProps {
+    quote: QuoteRequest;
+    handleOnSuccess: () => void;
+    handleOnError: (error: any) => void;
+  }
+
   const getPaginatedQuotes = (
     page: number,
     searchQuery: string,
@@ -26,46 +32,37 @@ const useQuotes = () => {
       quoteRequest: QuoteRequest,
       isNotSynced?: boolean
     ) => {
-      console.log("Triggering updateLocalQuoteList", {
-        quoteRequest,
-        isNotSynced,
-      });
-
+      // Ignoring typescript issue as i have no idea where the issue is coming from-
+      // @ts-ignore
       queryClient.setQueryData<QuoteRequest[]>(["quotes"], (quotes) => {
-        console.log("Do we have any quote in our query data?", quotes);
-        if (!quotes) return [{ quoteRequest, isNotSynced }];
+        if (!quotes) return [{ quoteRequest, isNotSynced }]; // Create the local array if it doesn't exist yet
         return quotes?.map((quote) => {
-          console.log("Looping through quotes, quote:", quote);
           if (quote.id === quoteRequest.id) {
             return { ...quote, isNotSynced };
           }
           return quote;
         });
       });
-
-      console.log({ current: queryClient.getQueryData(["quotes"]) });
     };
 
     const { mutate, isSuccess, isError, isPending, isPaused } = useMutation({
       mutationKey: ["quotes"],
-      mutationFn: async ({
-        quote,
-      }: {
-        quote: QuoteRequest;
-        handleOnSuccess: () => void;
-      }) => await postQuote(quote),
+      mutationFn: async ({ quote }: CreateMutationProps) =>
+        await postQuote(quote),
       onMutate: async ({ quote }) => {
-        console.log("onMutate triggered", { quote, id: quote.id });
+        console.log("Do we trigger?");
+
+        // Make sure to update the state locally first in case of being offline.
         await queryClient.cancelQueries({ queryKey: ["quotes"] });
         updateLocalQuoteList(quote, true);
-        console.log("onMutate finished");
       },
       onSuccess: (data, { quote, handleOnSuccess }, context) => {
+        console.log("Do we succeed?");
         updateLocalQuoteList(quote, false);
         handleOnSuccess();
       },
-      onError: (error) => {
-        console.log("CreateMutation error", error);
+      onError: (error, { handleOnError }) => {
+        handleOnError(error);
       },
       retry: true,
       retryDelay: 1000,

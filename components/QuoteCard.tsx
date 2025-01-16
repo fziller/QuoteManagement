@@ -37,7 +37,7 @@ const QuoteCard: React.FC<Quote> = (quote: Quote) => {
               justifyContent: "space-between",
               marginHorizontal: 5,
             }}
-            key={item.product_name + index}
+            key={item.product_name ?? "item" + index}
           >
             <Text>{item.product_name}</Text>
             <Text>{`${item.price}€`}</Text>

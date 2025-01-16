@@ -10,7 +10,6 @@ export const getQuotes = async (
   statusFilter: string,
   sort?: boolean
 ) => {
-  console.log("Triggering getQuotes", { sort });
   const quotes = await fetch(
     `${hostname}/api/collections/quotes/records?page=${page}&perPage=5${filter(
       statusFilter,
