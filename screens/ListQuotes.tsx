@@ -14,13 +14,9 @@ export default function ListQuotes() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [sortTotal, setSortTotal] = useState<boolean | undefined>(undefined);
 
-  const { getPaginatedQuotes } = useQuotes();
-  const { data, isError, isFetching } = getPaginatedQuotes(
-    page,
-    searchQuery,
-    statusFilter,
-    sortTotal
-  );
+  const { getPaginatedQuotes, isOnline } = useQuotes();
+  const { data, isError, isFetching, isPending, isLoading } =
+    getPaginatedQuotes(page, searchQuery, statusFilter, sortTotal);
 
   const handleSearch = (query: string) => {
     // TODO Add debounce here
@@ -92,7 +88,13 @@ export default function ListQuotes() {
       <PageButtons
         currentPage={page}
         pages={data?.totalPages ?? 1}
-        onPageSelect={(page) => setPage(page)}
+        onPageSelect={(selectedPage) => {
+          const currentPage = page;
+          setPage(selectedPage);
+          if (!isOnline) {
+            setPage(currentPage);
+          }
+        }}
       />
       {(!data?.items || data?.items.length === 0) && (
         <StatusComponent text="No quotes found." />

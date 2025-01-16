@@ -40,14 +40,6 @@ export default function App() {
           visibilityTime: 2000,
         });
       }
-      if (status) {
-        Toast.show({
-          type: "success",
-          text1: "You are back online",
-          visibilityTime: 2000,
-        });
-        void prefetchProducts();
-      }
     });
   }, []);
 

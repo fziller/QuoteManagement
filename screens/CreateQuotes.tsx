@@ -69,6 +69,7 @@ export default function CreateQuotes() {
     quoteMutate({
       quote: {
         id: nanoid(15), // Need to be 15 chars long.
+        created: new Date().toISOString(),
         customer_info: {
           name: customerName,
           email: customerEmail,

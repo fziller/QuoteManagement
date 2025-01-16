@@ -1,6 +1,4 @@
 export interface Quote extends QuoteRequest {
-  collectionId: string;
-  collectionName: string;
   created: string;
   description: string;
   id: string;
@@ -16,6 +14,7 @@ export interface QuoteItem {
 }
 
 export interface QuoteRequest {
+  created: string;
   customer_info: {
     address?: string;
     city?: string;

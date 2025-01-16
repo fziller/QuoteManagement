@@ -1,9 +1,16 @@
 import { getQuotes, postQuote } from "@/networking/quotes";
 import { QuoteRequest, QuoteResponse } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  onlineManager,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import Toast from "react-native-toast-message";
 
 const useQuotes = () => {
   const queryClient = useQueryClient();
+  const isOnline = onlineManager.isOnline();
 
   interface CreateMutationProps {
     quote: QuoteRequest;
@@ -23,6 +30,15 @@ const useQuotes = () => {
         queryFn: () => getQuotes(page, searchQuery, statusFilter, sort),
         placeholderData: (prev) => prev,
       });
+
+    // At least notify customer in case of being offline and failed pageload.
+    !isOnline
+      ? Toast.show({
+          type: "error",
+          text1: "Offline",
+          text2: "Could not load page. Make sure to come back online",
+        })
+      : null;
 
     return { data, isLoading, isError, isFetching, isPending };
   };
@@ -50,14 +66,11 @@ const useQuotes = () => {
       mutationFn: async ({ quote }: CreateMutationProps) =>
         await postQuote(quote),
       onMutate: async ({ quote }) => {
-        console.log("Do we trigger?");
-
         // Make sure to update the state locally first in case of being offline.
         await queryClient.cancelQueries({ queryKey: ["quotes"] });
         updateLocalQuoteList(quote, true);
       },
       onSuccess: (data, { quote, handleOnSuccess }, context) => {
-        console.log("Do we succeed?");
         updateLocalQuoteList(quote, false);
         handleOnSuccess();
       },
@@ -71,7 +84,7 @@ const useQuotes = () => {
     return { mutate, isSuccess, isError, isPending, isPaused };
   };
 
-  return { getPaginatedQuotes, createQuote };
+  return { getPaginatedQuotes, createQuote, isOnline };
 };
 
 export default useQuotes;

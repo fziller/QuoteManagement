@@ -20,7 +20,7 @@ const QuoteCard: React.FC<Quote> = (quote: Quote) => {
               {quote.status}
             </Text>
             <Text style={{ marginEnd: 20, marginTop: 10 }}>
-              {`${new Date(quote.valid_until).toDateString()}`}
+              {`${new Date(quote.created).toDateString()}`}
             </Text>
           </View>
         )}

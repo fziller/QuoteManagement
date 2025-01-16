@@ -15,6 +15,7 @@ jest.mock("@tanstack/react-query", () => ({
   })),
   useQuery: jest.fn(),
   useMutation: jest.fn(),
+  onlineManager: { isOnline: jest.fn(() => true) },
 }));
 
 describe("useQuotes Hook", () => {
@@ -87,6 +88,7 @@ describe("useQuotes Hook", () => {
         name: "customer name",
       },
       id: "123451234512345",
+      created: "2023-01-01T00:00:00.000Z",
       items: [
         { price: 12, product_name: "my product", quantity: 1, subtotal: 8 },
       ],

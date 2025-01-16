@@ -10,20 +10,29 @@ export const getQuotes = async (
   statusFilter: string,
   sort?: boolean
 ) => {
-  const quotes = await fetch(
-    `${hostname}/api/collections/quotes/records?page=${page}&perPage=5${filter(
-      statusFilter,
-      searchQuery
-    )}${
-      sort === undefined ? "" : sort === true ? "&sort=-total" : "&sort=+total"
-    }`,
-    {
-      method: "GET",
-    }
-  )
-    .then((res) => res.json())
-    .catch((err) => console.log(err)); // Send error to Sentry or other error reporting service
-  return quotes;
+  // Improvement: We can reduce the number of fields being returned by the API by adding
+  // a field param and define what we want to receive. Less payload, faster response.
+  try {
+    const quotes = await axios(
+      `${hostname}/api/collections/quotes/records?page=${page}&perPage=5${filter(
+        statusFilter,
+        searchQuery
+      )}${
+        sort === undefined
+          ? ""
+          : sort === true
+          ? "&sort=-total"
+          : "&sort=+total"
+      }`,
+      {
+        method: "GET",
+      }
+    );
+    return quotes.data;
+  } catch (err) {
+    console.log(err); // Send error to Sentry or other error reporting service
+    throw err;
+  }
 };
 
 export const postQuote = async (quote: QuoteRequest) => {
