@@ -1,6 +1,6 @@
 import useQuotes from "@/hooks/useQuotes"; // Passe den Pfad an
 import { QuoteStatus } from "@/types";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
 
 jest.mock("@/networking/quotes", () => ({
@@ -9,24 +9,20 @@ jest.mock("@/networking/quotes", () => ({
 }));
 
 jest.mock("@tanstack/react-query", () => ({
-  useQueryClient: jest.fn(() => ({
-    setQueryData: jest.fn(),
-    cancelQueries: jest.fn(),
-  })),
   useQuery: jest.fn(),
   useMutation: jest.fn(),
   onlineManager: { isOnline: jest.fn(() => true) },
 }));
 
-describe("useQuotes Hook", () => {
-  let queryClientMock: any;
+jest.mock("@/networking/provider", () => ({
+  queryClient: {
+    setQueryData: jest.fn(),
+    cancelQueries: jest.fn(),
+  },
+}));
 
+describe("useQuotes Hook", () => {
   beforeEach(() => {
-    queryClientMock = {
-      setQueryData: jest.fn(),
-      cancelQueries: jest.fn(),
-    };
-    (useQueryClient as jest.Mock).mockReturnValue(queryClientMock);
     jest.clearAllMocks();
   });
 

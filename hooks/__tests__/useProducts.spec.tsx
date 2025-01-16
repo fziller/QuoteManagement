@@ -1,25 +1,19 @@
 import useProducts from "@/hooks/useProducts";
 import { getProducts } from "@/networking/products";
-import { useQueryClient } from "@tanstack/react-query";
+import { queryClient } from "@/networking/provider";
 import { renderHook } from "@testing-library/react";
 jest.mock("@/networking/products", () => ({
   getProducts: jest.fn(),
 }));
 
-jest.mock("@tanstack/react-query", () => ({
-  useQueryClient: jest.fn(() => ({
+jest.mock("@/networking/provider", () => ({
+  queryClient: {
     prefetchInfiniteQuery: jest.fn(),
-  })),
+  },
 }));
 
 describe("useProducts Hook", () => {
-  let queryClientMock: any;
-
   beforeEach(() => {
-    queryClientMock = {
-      prefetchInfiniteQuery: jest.fn(),
-    };
-    (useQueryClient as jest.Mock).mockReturnValue(queryClientMock);
     jest.clearAllMocks();
   });
 
@@ -34,8 +28,8 @@ describe("useProducts Hook", () => {
 
     await prefetchProducts();
 
-    expect(queryClientMock.prefetchInfiniteQuery).toHaveBeenCalledTimes(1);
-    expect(queryClientMock.prefetchInfiniteQuery).toHaveBeenCalledWith({
+    expect(queryClient.prefetchInfiniteQuery).toHaveBeenCalledTimes(1);
+    expect(queryClient.prefetchInfiniteQuery).toHaveBeenCalledWith({
       queryKey: ["products"],
       queryFn: expect.any(Function),
       initialPageParam: 1,

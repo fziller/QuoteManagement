@@ -1,11 +1,10 @@
 import { getProducts } from "@/networking/products";
-import { useQueryClient } from "@tanstack/react-query";
+import { queryClient } from "@/networking/provider";
 import Toast from "react-native-toast-message";
 
 const useProducts = () => {
   const prefetchProducts = async () => {
-    const queryClient = useQueryClient();
-    const result = await queryClient.prefetchInfiniteQuery({
+    await queryClient.prefetchInfiniteQuery({
       queryKey: ["products"],
       queryFn: async ({ pageParam }) => await getProducts(pageParam),
       initialPageParam: 1,

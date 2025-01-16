@@ -1,15 +1,10 @@
+import { queryClient } from "@/networking/provider";
 import { getQuotes, postQuote } from "@/networking/quotes";
 import { QuoteRequest, QuoteResponse } from "@/types";
-import {
-  onlineManager,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { onlineManager, useMutation, useQuery } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
 const useQuotes = () => {
-  const queryClient = useQueryClient();
   const isOnline = onlineManager.isOnline();
 
   interface CreateMutationProps {

@@ -4,18 +4,19 @@ import NetInfo from "@react-native-community/netinfo";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
-import { QueryClient, onlineManager } from "@tanstack/react-query";
+import { onlineManager } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { StatusBar } from "react-native";
 import { useTheme } from "react-native-paper";
+import { DevToolsBubble } from "react-native-react-query-devtools";
 import Toast from "react-native-toast-message";
 import useProducts from "./hooks/useProducts";
+import { queryClient } from "./networking/provider";
 import CreateQuotes from "./screens/CreateQuotes";
 import ListQuotes from "./screens/ListQuotes";
 
 export default function App() {
-  const queryClient = new QueryClient();
   const Tab = createBottomTabNavigator();
 
   const { prefetchProducts } = useProducts();
@@ -126,6 +127,7 @@ export default function App() {
       </NavigationContainer>
       <Toast />
       <StatusBar backgroundColor={theme.colors.primary} />
+      <DevToolsBubble />
     </PersistQueryClientProvider>
   );
 }
