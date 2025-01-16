@@ -7,6 +7,7 @@ import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persi
 import { QueryClient, onlineManager } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
 import { useEffect } from "react";
+import { StatusBar } from "react-native";
 import { useTheme } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import useProducts from "./hooks/useProducts";
@@ -115,6 +116,7 @@ export default function App() {
               title: "Create new quote",
               headerTitleAlign: "center",
               headerTintColor: "white",
+
               headerStyle: {
                 backgroundColor: theme.colors.primary,
               },
@@ -123,6 +125,7 @@ export default function App() {
         </Tab.Navigator>
       </NavigationContainer>
       <Toast />
+      <StatusBar backgroundColor={theme.colors.primary} />
     </PersistQueryClientProvider>
   );
 }
