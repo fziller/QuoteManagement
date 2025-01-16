@@ -6,10 +6,9 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { onlineManager } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { StatusBar } from "react-native";
 import { useTheme } from "react-native-paper";
-import { DevToolsBubble } from "react-native-react-query-devtools";
 import Toast from "react-native-toast-message";
 import useProducts from "./hooks/useProducts";
 import { queryClient } from "./networking/provider";
@@ -127,7 +126,6 @@ export default function App() {
       </NavigationContainer>
       <Toast />
       <StatusBar backgroundColor={theme.colors.primary} />
-      <DevToolsBubble />
     </PersistQueryClientProvider>
   );
 }

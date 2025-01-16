@@ -20,30 +20,32 @@
 5. Start the app on the simulator / emulator like
 
 ```bash
-   HOSTNAME=${NGROK_STATIC_URL} npx expo start
+   HOSTNAME=${NGROK_STATIC_DOMAIN} npx expo start
 ```
 
 or connect your device and start it on android device via
 
 ```bash
-   HOSTNAME=${NGROK_STATIC_URL} npx expo run:android --device
+   HOSTNAME=${NGROK_STATIC_DOMAIN} npx expo run:android --device
 ```
 
 or on iOS device via
 
 ```bash
-   HOSTNAME=${NGROK_STATIC_URL} npx expo run:ios --device
+   HOSTNAME=${NGROK_STATIC_DOMAIN} npx expo run:ios --device
 ```
 
 ## Build the app
 
-For building the application for an android voice, do
+For building the application for an android device, execute
 
 ```bash
-   cd android && HOSTNAME=${NGROK_STATIC_URL} ./gradlew assembleRelease
+   cd android && HOSTNAME=${NGROK_STATIC_DOMAIN} ./gradlew assembleRelease
 ```
 
 The \*.apk file can be found under android/app/build/outputs/apk/release/app-release.apk
+
+## Run tests
 
 ## Supported Features
 
@@ -54,4 +56,3 @@ The \*.apk file can be found under android/app/build/outputs/apk/release/app-rel
 
 - Queries created while being offline are not created when application is killed before sending it.
 - Some further design issues, e.g. if only one query result is being shown
-- Sometimes, the list of products disappear for no reason. Needs some investigation.
