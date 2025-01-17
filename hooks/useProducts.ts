@@ -1,5 +1,6 @@
 import { getProducts } from "@/networking/products";
 import { queryClient } from "@/networking/provider";
+import { Product, ProductResponse } from "@/types";
 import Toast from "react-native-toast-message";
 
 const useProducts = () => {
@@ -22,7 +23,19 @@ const useProducts = () => {
     });
   };
 
-  return { prefetchProducts };
+  const getPrefetchedProducts = (): Product[] => {
+    let products: ProductResponse = queryClient.getQueryData(["products"]) ?? {
+      pageParams: [],
+      pages: [],
+    };
+
+    // Get the proper format out of the cached data
+    return products.pages
+      .map((productResponse) => productResponse.items)
+      .flat();
+  };
+
+  return { prefetchProducts, getPrefetchedProducts };
 };
 
 export default useProducts;
