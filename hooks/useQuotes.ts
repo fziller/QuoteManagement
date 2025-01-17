@@ -2,7 +2,6 @@ import { queryClient } from "@/networking/provider";
 import { getQuotes, postQuote } from "@/networking/quotes";
 import { QuoteRequest, QuoteResponse } from "@/types";
 import { onlineManager, useMutation, useQuery } from "@tanstack/react-query";
-import Toast from "react-native-toast-message";
 
 const useQuotes = () => {
   const isOnline = onlineManager.isOnline();
@@ -25,16 +24,8 @@ const useQuotes = () => {
         queryFn: () => getQuotes(page, searchQuery, statusFilter, sort),
         placeholderData: (prev) => prev,
         staleTime: 1000 * 60 * 15, // 15 minutes. Can be extended or shortened, depending on needs.
+        enabled: isOnline,
       });
-
-    // At least notify customer in case of being offline and failed pageload.
-    !isOnline
-      ? Toast.show({
-          type: "error",
-          text1: "Offline",
-          text2: "Could not load page. Make sure to come back online",
-        })
-      : null;
 
     return { data, isLoading, isError, isFetching, isPending };
   };
@@ -85,7 +76,7 @@ const useQuotes = () => {
     return { mutate, isSuccess, isError, isPending, isPaused };
   };
 
-  return { getPaginatedQuotes, createQuote, isOnline };
+  return { getPaginatedQuotes, createQuote };
 };
 
 export default useQuotes;

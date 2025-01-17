@@ -37,7 +37,7 @@ export const getQuotes = async (
 
 export const postQuote = async (quote: QuoteRequest) => {
   try {
-    const result = await axios(`${hostname}/api/collections/quotes/records`, {
+    await axios(`${hostname}/api/collections/quotes/records`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

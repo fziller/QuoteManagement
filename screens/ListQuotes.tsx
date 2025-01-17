@@ -4,6 +4,7 @@ import QuoteStatusDropdown from "@/components/QuoteStatusDropdown";
 import StatusComponent from "@/components/StatusComponent";
 import useQuotes from "@/hooks/useQuotes";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useNetInfo } from "@react-native-community/netinfo";
 import { useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { Searchbar } from "react-native-paper";
@@ -13,10 +14,15 @@ export default function ListQuotes() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [sortTotal, setSortTotal] = useState<boolean | undefined>(undefined);
+  const { isInternetReachable } = useNetInfo();
 
-  const { getPaginatedQuotes, isOnline } = useQuotes();
-  const { data, isError, isFetching, isPending, isLoading } =
-    getPaginatedQuotes(page, searchQuery, statusFilter, sortTotal);
+  const { getPaginatedQuotes } = useQuotes();
+  const { data, isError, isFetching } = getPaginatedQuotes(
+    page,
+    searchQuery,
+    statusFilter,
+    sortTotal
+  );
 
   const handleSearch = (query: string) => {
     // TODO Add debounce here
@@ -79,29 +85,32 @@ export default function ListQuotes() {
           </View>
         </TouchableOpacity>
       </View>
-      <PageButtons
-        currentPage={page}
-        pages={data?.totalPages ?? 1}
-        onPageSelect={(selectedPage) => {
-          const currentPage = page;
-          setPage(selectedPage);
-          if (!isOnline) {
-            setPage(currentPage);
-          }
-        }}
-      />
+      {isInternetReachable && (
+        <PageButtons
+          currentPage={page}
+          pages={data?.totalPages ?? 1}
+          onPageSelect={(selectedPage) => {
+            setPage(selectedPage);
+          }}
+        />
+      )}
+
       {(!data?.items || data?.items.length === 0) && (
         <StatusComponent text="No quotes found." />
       )}
       {isError && (
         <StatusComponent text="An error occured. This is the right time to panic. Restart the app and make sure to have an active internet connection" />
       )}
-
-      <FlatList
-        data={data?.items}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <QuoteCard {...item} />}
-      />
+      {!isInternetReachable && (
+        <StatusComponent text="Internet connection missing. Please make sure to reconnect." />
+      )}
+      {isInternetReachable && (
+        <FlatList
+          data={data?.items}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <QuoteCard {...item} />}
+        />
+      )}
     </View>
   );
 }

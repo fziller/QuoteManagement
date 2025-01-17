@@ -54,6 +54,7 @@ describe("useQuotes Hook", () => {
       queryFn: expect.any(Function),
       placeholderData: expect.any(Function),
       staleTime: 900000,
+      enabled: true,
     });
 
     expect(response.data).toEqual(mockQuotesData);

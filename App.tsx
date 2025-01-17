@@ -12,6 +12,7 @@ import { useTheme } from "react-native-paper";
 import Toast from "react-native-toast-message";
 import useProducts from "./hooks/useProducts";
 import { queryClient } from "./networking/provider";
+import { postQuote } from "./networking/quotes";
 import CreateQuotes from "./screens/CreateQuotes";
 import ListQuotes from "./screens/ListQuotes";
 
@@ -27,13 +28,11 @@ export default function App() {
   });
 
   useEffect(() => {
-    // Get all products beforehand to have them cached in offline case.
-    void prefetchProducts();
     // Makes sure to trigger paused mutations if we come back online
     return NetInfo.addEventListener((state) => {
       const status = !!state.isConnected;
       onlineManager.setOnline(status);
-      if (!status) {
+      if (!state.isConnected) {
         Toast.show({
           type: "error",
           text1: "You are offline",
@@ -41,7 +40,8 @@ export default function App() {
           visibilityTime: 2000,
         });
       }
-      if (status === true) {
+      // Make sure to fetch latest product information if we come back online.
+      if (state.isConnected === true && state.isInternetReachable === true) {
         void prefetchProducts();
       }
     });
@@ -52,18 +52,17 @@ export default function App() {
       persistOptions={{ persister }}
       client={queryClient}
       onSuccess={() => {
-        // As per https://github.com/TanStack/query/discussions/7044, this should resume persisted mutations even after app kill.
-        // It does not seem to work and requires some further digging.
-        const mutations = queryClient
+        const filteredMutations = queryClient
           .getMutationCache()
           .getAll()
-          .filter(
-            (m) =>
-              !m.state.isPaused &&
-              (m.state.status === "idle" || m.state.status === "pending")
-          );
-        for (const mutation of mutations) {
-          void mutation.continue();
+          .filter((m) => m.options?.mutationKey?.[0] === "quotes");
+
+        for (const mutation of filteredMutations) {
+          // Actually, react-query supports continuing paused mutations by calling mutation.continue(), but this seems to not work here.
+          // We do the workaround of manually posting created quotes here.
+          if (mutation.state?.variables?.quote) {
+            postQuote(mutation.state?.variables?.quote);
+          }
         }
 
         queryClient
