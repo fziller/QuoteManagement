@@ -9,7 +9,7 @@ import { MaterialIcons as Icon } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { nanoid } from "nanoid/non-secure"; // Only works with non-secure nanoid.
 import React, { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { ScrollView, Text } from "react-native";
 import { Button, TextInput, useTheme } from "react-native-paper";
 import SectionedMultiSelect from "react-native-sectioned-multi-select";
 import Toast from "react-native-toast-message";
@@ -22,11 +22,10 @@ export default function CreateQuotes() {
   const [customerName, setCustomerName] = useState<string>("");
   const [customerEmail, setCustomerEmail] = useState<string>("");
   const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [theProducts, setTheProducts] = useState<Product[]>([]);
   const { dispatch, state: totalsState } = useCalculateTotals();
   const { createQuote } = useQuotes();
 
-  const { mutate: quoteMutate, isError, isPending, isSuccess } = createQuote();
+  const { mutate: quoteMutate } = createQuote();
 
   useEffect(() => {
     const subtotal = selectedProducts.reduce((acc, product) => {
@@ -100,7 +99,7 @@ export default function CreateQuotes() {
   };
 
   return (
-    <View style={{ gap: 10, marginHorizontal: 10, marginTop: 10 }}>
+    <ScrollView style={{ gap: 10, margin: 10 }}>
       <InputComponent
         label="Customer name"
         placeholder="Enter name of customer ..."
@@ -172,6 +171,6 @@ export default function CreateQuotes() {
       >
         Submit quote
       </Button>
-    </View>
+    </ScrollView>
   );
 }

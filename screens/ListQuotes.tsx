@@ -56,7 +56,7 @@ export default function ListQuotes() {
       >
         <QuoteStatusDropdown
           onSelect={(selectedItem) => {
-            setStatusFilter(selectedItem);
+            setStatusFilter(selectedItem === "CLEAR LIST" ? "" : selectedItem);
             setPage(1);
           }}
         />

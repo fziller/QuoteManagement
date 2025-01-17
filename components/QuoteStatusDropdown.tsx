@@ -4,13 +4,14 @@ import { Divider } from "react-native-paper";
 import SelectDropdown from "react-native-select-dropdown";
 
 interface QuoteStatusDropdownProps {
-  onSelect: (selectedItem: QuoteStatus) => void;
+  onSelect: (selectedItem: QuoteStatus | "CLEAR LIST") => void;
 }
 
 const QuoteStatusDropdown: React.FC<QuoteStatusDropdownProps> = (props) => {
   return (
     <SelectDropdown
       data={[
+        "CLEAR LIST",
         QuoteStatus.DRAFT,
         QuoteStatus.PENDING,
         QuoteStatus.REJECTED,
