@@ -60,9 +60,7 @@ export default function App() {
         for (const mutation of filteredMutations) {
           // Actually, react-query supports continuing paused mutations by calling mutation.continue(), but this seems to not work here.
           // We do the workaround of manually posting created quotes here.
-          if (mutation.state?.variables?.quote) {
-            postQuote(mutation.state?.variables?.quote);
-          }
+          postQuote(mutation.state?.variables?.quote);
         }
 
         queryClient
